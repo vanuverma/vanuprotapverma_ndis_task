@@ -1,3 +1,18 @@
 
 
 GET http://localhost:4000/health
+
+### 
+
+POST http://localhost:4000/api/users HTTP/1.1
+content-type: application/json
+
+{
+    "name": "John Connor",
+    "email": "jc@sample.com"
+}
+
+
+### 
+
+GET http://localhost:4000/api/users
