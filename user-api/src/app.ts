@@ -6,6 +6,7 @@ import { UserService } from './services/user.service.js';
 import { UserStore } from './store/user.store.js';
 import { errorHandler } from './middlewares/error-handler.middleware.js';
 import { ErrorCodes } from './utils/constants.js';
+import { requireVerifiedUser } from './middlewares/verify-user.middleware.js';
 
 export function createApp() {
   const app = express();
@@ -27,7 +28,8 @@ export function createApp() {
     });
   });
 
-  app.use('/api/users', userRoutes.getUserRoutes());
+  // using /internal just to differentiate the URL from gateway url
+  app.use('/api/internal/users', requireVerifiedUser, userRoutes.getUserRoutes());
 
   // unknown routes
   app.use((req, res) => {

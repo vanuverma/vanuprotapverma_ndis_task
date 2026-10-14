@@ -5,16 +5,17 @@ GET http://localhost:4000/health
 
 ### 
 
-GET http://localhost:4000/api/users
+GET http://localhost:4000/api/internal/users
 
 ### 
 
-GET http://localhost:4000/api/users/01a137df-8c24-72e4-8e69-1a4e6ca8890e
+GET http://localhost:4000/api/internal/users/<copy-from-post-response>
 
 ### 
 
-POST http://localhost:4000/api/users HTTP/1.1
+POST http://localhost:4000/api/internal/users HTTP/1.1
 content-type: application/json
+X-Verified-User: "a@a.com"
 
 {
     "name": "John Connor",
@@ -24,15 +25,15 @@ content-type: application/json
 
 ### 
 
-PUT http://localhost:4000/api/users/01a137ec-575a-760a-8266-af802953caed HTTP/1.1
+PUT http://localhost:4000/api/internal/users/<copy-from-post-response> HTTP/1.1
 content-type: application/json
 
 {
     "name": "John Connor",
     "email": "jc1.new@sample.com",
-    "id": "01a137ec-575a-760a-8266-af802953caed"
+    "id": "<copy-from-post-response>"
 }
 
 ### 
 
-DELETE http://localhost:4000/api/users/01a137ec-575a-760a-8266-af802953caed
+DELETE http://localhost:4000/api/internal/users/<copy-from-post-response>

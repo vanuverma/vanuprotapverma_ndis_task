@@ -28,3 +28,12 @@ export interface ApiErrorDetails {
 }
 
 export type ErrorCodeKey = keyof typeof ErrorCodes;
+
+// Extend Express Request so route handlers can read user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: string;
+    }
+  }
+}
