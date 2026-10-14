@@ -2,7 +2,10 @@ import { Router, type Request, type Response } from "express";
 
 import type { IUserService } from "../services/user.service.js";
 import { populateApiResponse } from "../utils/utilities.js";
-import type { User, UserInput } from "../models/user.models.js";
+import type { User, UserInput } from "../models/index.models.js";
+import { ErrorCodes } from "../utils/constants.js";
+import { asyncHandler } from "../middlewares/async-handler.middleware.js";
+import { AppError } from "../utils/app-error.util.js";
 
 
 export class UserRoutes {
@@ -19,20 +22,19 @@ export class UserRoutes {
   }
 
   private registerRoutes = (): void => {
-    this._router.get("/api/users", this.getAllUsers);
-    this._router.get("/api/users/:id", this.getUserById);
-    this._router.post("/api/users", this.addUser);
-    this._router.put("/api/users/:id", this.updateUser);
-    this._router.delete("/api/users/:id", this.removeUser);
+    this._router.get("/", asyncHandler(this.getAllUsers));
+    this._router.get("/:id", asyncHandler(this.getUserById));
+    this._router.post("/", asyncHandler(this.addUser));
+    this._router.put("/:id", asyncHandler(this.updateUser));
+    this._router.delete("/:id", asyncHandler(this.removeUser));
   }
 
   private getAllUsers = async (
     req: Request,
     res: Response
   ): Promise<void> => {
-    console.log("HERE");
     const users = await this.userService.getAllUsers();
-    const apiResponse = populateApiResponse(200, "Success", users);
+    const apiResponse = populateApiResponse(200, "Success", users, null);
     res.status(200).json(apiResponse);
     return;
   }
@@ -42,13 +44,11 @@ export class UserRoutes {
     res: Response
   ): Promise<void> => {
     if (!req.params || !req.params.id) {
-      const errorResponse = populateApiResponse(400, "Error: Bad Request", undefined);
-      res.status(400).json(errorResponse);
-      return;
+      throw new AppError("Missing input parameter(s)", 400, ErrorCodes.BAD_REQUEST);
     }
     const idParam = req.params.id?.toString();
     const user = await this.userService.getUserById(idParam);
-    const apiResponse = populateApiResponse(200, "Success", user);
+    const apiResponse = populateApiResponse(200, "Success", user, null);
     res.status(200).json(apiResponse);
   }
 
@@ -56,21 +56,19 @@ export class UserRoutes {
     req: Request,
     res: Response
   ): Promise<void> => {
-    if (!req.body) {
-      const errorResponse = populateApiResponse(400, "Error: Bad Request", undefined);
-      res.status(400).json(errorResponse);
-      return;
+    if (!req.body || !req.body.name || !req.body.email) {
+      throw new AppError("Missing request payload", 400, ErrorCodes.BAD_REQUEST);
     }
-
-    const userInput: UserInput = JSON.parse(req.body);
+    const userInput: UserInput = {
+      email: req.body.email,
+      name: req.body.name
+    };
     if (!userInput || !userInput.email || !userInput.name) {
-      const errorResponse = populateApiResponse(400, "Error: Bad Request", undefined);
-      res.status(400).json(errorResponse);
-      return;
+      throw new AppError("Invalid request payload", 400, ErrorCodes.BAD_REQUEST);
     }
 
     const user = await this.userService.addUser(userInput);
-    const apiResponse = populateApiResponse(200, "Success", user);
+    const apiResponse = populateApiResponse(200, "Success", user, null);
     res.status(200).json(apiResponse);
   }
 
@@ -79,21 +77,22 @@ export class UserRoutes {
     res: Response
   ): Promise<void> => {
     if (!req.params || !req.params.id) {
-      const errorResponse = populateApiResponse(400, "Error: Bad Request", undefined);
-      res.status(400).json(errorResponse);
-      return;
+      throw new AppError("Missing input parameter(s)", 400, ErrorCodes.BAD_REQUEST);
     }
     const idParam = req.params.id?.toString();
-    
-    const existingUser: User = JSON.parse(req.body);
-    if (!existingUser || !existingUser.email || !existingUser.name || !existingUser.id || existingUser.id !== idParam) {
-      const errorResponse = populateApiResponse(400, "Error: Bad Request", undefined);
-      res.status(400).json(errorResponse);
-      return;
-    }
 
-    const user = await this.userService.updateUser(idParam, existingUser);
-    const apiResponse = populateApiResponse(200, "Success", user);
+    if (!req.body || !req.body.name || !req.body.email || !req.body.id || req.body.id !== idParam) {
+      throw new AppError("Missing request payload", 400, ErrorCodes.BAD_REQUEST);
+    }
+    
+    const userToUpdate: User = {
+      email: req.body.email,
+      name: req.body.name,
+      id: req.body.id,
+    };
+
+    const user = await this.userService.updateUser(idParam, userToUpdate);
+    const apiResponse = populateApiResponse(200, "Success", user, null);
     res.status(200).json(apiResponse);
   }
 
@@ -102,13 +101,11 @@ export class UserRoutes {
     res: Response
   ): Promise<void> => {
     if (!req.params || !req.params.id) {
-      const errorResponse = populateApiResponse(400, "Error: Bad Request", undefined);
-      res.status(400).json(errorResponse);
-      return;
+      throw new AppError("Missing input parameter(s)", 400, ErrorCodes.BAD_REQUEST);
     }
     const idParam = req.params.id?.toString();
-    const user = await this.userService.removeUser(idParam);
-    const apiResponse = populateApiResponse(204, "Success", undefined);
+    await this.userService.removeUser(idParam);
+    const apiResponse = populateApiResponse(204, "Success", null, null);
     res.status(204).json(apiResponse);
   }
 }

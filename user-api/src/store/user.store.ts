@@ -1,5 +1,4 @@
-import { resolve } from "node:dns";
-import type { User, UserInput } from "../models/user.models.js";
+import type { User, UserInput } from "../models/index.models.js";
 import { uuidv7 } from "uuidv7";
 
 export interface IUserStore {
@@ -7,6 +6,7 @@ export interface IUserStore {
   update(id: string, user: User): Promise<User | undefined>;
   getAll(): Promise<User[]>;
   getById(id: string): Promise<User | undefined>;
+  getByEmail(email: string): Promise<User | undefined>;
   remove(id: string): Promise<void>;
 }
 
@@ -35,7 +35,6 @@ export class UserStore implements IUserStore {
     };
 
     this._users.set(uId, userToCreate);
-    console.log(this._users);
     return Promise.resolve(userToCreate);
   }
 
@@ -45,23 +44,29 @@ export class UserStore implements IUserStore {
 
   async update(id: string, user: User): Promise<User | undefined> {
     const updatedUser: User = {
-      ...user,
+      email: user.email,
+      name: user.name,
       id: id,
       updatedAtUtc: this.getUtcTimeStamp()
     };
 
-    // user not found
-    if (!this._users.has(id)) {
-      return Promise.resolve(undefined);
-    }
-
     this._users.set(id, updatedUser);
-    console.log(updatedUser);
     return Promise.resolve(updatedUser);
   }
 
   async getById(id: string): Promise<User | undefined> {
     const user: User | undefined = this._users.get(id);
+    return Promise.resolve(user);
+  }
+
+  async getByEmail(email: string): Promise<User | undefined> {
+    let user: User | undefined;
+    for (let item of this._users.values()) {
+      if (item.email === email) {
+        user = item;
+        break;
+      }
+    }
     return Promise.resolve(user);
   }
 

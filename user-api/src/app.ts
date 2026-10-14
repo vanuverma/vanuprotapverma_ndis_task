@@ -4,9 +4,12 @@ import cors from 'cors';
 import { UserRoutes } from './routes/user.routes.js';
 import { UserService } from './services/user.service.js';
 import { UserStore } from './store/user.store.js';
+import { errorHandler } from './middlewares/error-handler.middleware.js';
+import { ErrorCodes } from './utils/constants.js';
 
 export function createApp() {
   const app = express();
+  app.disable('x-powered-by');
 
   // middlewares
   app.use(cors());
@@ -24,7 +27,22 @@ export function createApp() {
     });
   });
 
-  app.use('/users', userRoutes.getUserRoutes());
+  app.use('/api/users', userRoutes.getUserRoutes());
+
+  // unknown routes
+  app.use((req, res) => {
+    res.status(404).json({
+      status: 404,
+      message: "Route not found",
+      data: null,
+      error: {
+        code: ErrorCodes.ROUTE_NOT_FOUND,
+      },
+    });
+  });
+
+  // global error handler middleware
+  app.use(errorHandler);
 
   return app;
 }

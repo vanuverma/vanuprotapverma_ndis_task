@@ -2,6 +2,15 @@
 
 GET http://localhost:4000/health
 
+
+### 
+
+GET http://localhost:4000/api/users
+
+### 
+
+GET http://localhost:4000/api/users/01a137df-8c24-72e4-8e69-1a4e6ca8890e
+
 ### 
 
 POST http://localhost:4000/api/users HTTP/1.1
@@ -15,4 +24,15 @@ content-type: application/json
 
 ### 
 
-GET http://localhost:4000/api/users
+PUT http://localhost:4000/api/users/01a137ec-575a-760a-8266-af802953caed HTTP/1.1
+content-type: application/json
+
+{
+    "name": "John Connor",
+    "email": "jc1.new@sample.com",
+    "id": "01a137ec-575a-760a-8266-af802953caed"
+}
+
+### 
+
+DELETE http://localhost:4000/api/users/01a137ec-575a-760a-8266-af802953caed

@@ -1,6 +1,7 @@
-import type { User, UserInput } from "../models/user.models.js";
+import type { User, UserInput } from "../models/index.models.js";
 import type { IUserStore } from "../store/user.store.js";
-
+import { AppError } from "../utils/app-error.util.js";
+import { ErrorCodes } from "../utils/constants.js";
 
 export interface IUserService {
   addUser(user: UserInput): Promise<User>;
@@ -16,36 +17,55 @@ export interface IUserService {
  */
 export class UserService implements IUserService {
 
-  constructor(private userStore: IUserStore) {}
+  constructor(private userStore: IUserStore) { }
 
-  addUser(user: UserInput): Promise<User> {
+  async addUser(user: UserInput): Promise<User> {
     if (!user || !user.email || !user.name) {
-      throw new Error('Invalid input parameter(s).');
+      throw new AppError('Invalid input parameter(s).', 400, ErrorCodes.BAD_REQUEST);
+    }
+    const existingUser = await this.userStore.getByEmail(user.email);
+    // ensuring email uniqueness
+    if (existingUser) {
+      throw new AppError('Invalid input parameter(s).', 400, ErrorCodes.BAD_REQUEST);
     }
     return this.userStore.create(user);
   }
 
-  updateUser(id: string, user: User): Promise<User | undefined> {
-    if (!id || !user || !user.email || !user.name) {
-      return Promise.reject('Invalid input parameter(s)');
+  async updateUser(id: string, user: User): Promise<User | undefined> {
+    if (!id || !user || !user.email || !user.name || !user.id) {
+      throw new AppError('Invalid input parameter(s).', 400, ErrorCodes.BAD_REQUEST);
+    }
+
+    const existingUser = await this.userStore.getById(id);
+    if (!existingUser) {
+      throw new AppError('User not found.', 400, ErrorCodes.USER_NOT_FOUND);
     }
     return this.userStore.update(id, user);
   }
 
-  getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<User[]> {
     return this.userStore.getAll();
   }
 
-  getUserById(id: string): Promise<User | undefined> {
+  async getUserById(id: string): Promise<User | undefined> {
     if (!id) {
-      return Promise.reject('Invalid input parameter(s)');
+      throw new AppError('Invalid input parameter(s).', 400, ErrorCodes.BAD_REQUEST);
     }
-    return this.userStore.getById(id);
+    const existingUser = await this.userStore.getById(id);
+    if (!existingUser) {
+      throw new AppError('User not found.', 400, ErrorCodes.USER_NOT_FOUND);
+    }
+    return existingUser;
   }
 
-  removeUser(id: string): Promise<void> {
+  async removeUser(id: string): Promise<void> {
     if (!id) {
-      return Promise.reject('Invalid input parameter(s)');
+      throw new AppError('Invalid input parameter(s).', 400, ErrorCodes.BAD_REQUEST);
+    }
+
+    const existingUser = this.userStore.getById(id);
+    if (!existingUser) {
+      throw new AppError('User not found', 400, ErrorCodes.USER_NOT_FOUND);
     }
     return this.userStore.remove(id);
   }

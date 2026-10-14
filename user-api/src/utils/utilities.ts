@@ -1,10 +1,16 @@
-import type { ApiResponse } from "../models/user.models.js";
+import type { ApiErrorDetails, ApiResponse } from "../models/index.models.js";
 
-export function populateApiResponse(status: number, message: string, data: any): ApiResponse {
-  const response: ApiResponse = {
-    data: data,
-    status: status,
-    message: message
+export function populateApiResponse<T>(
+  status: number,
+  message: string,
+  data: T | null,
+  error: ApiErrorDetails | null
+): ApiResponse<T> {
+  const response: ApiResponse<T> = {
+    error,
+    data,
+    status,
+    message
   };
   return response;
 }
