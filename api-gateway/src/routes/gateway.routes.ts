@@ -14,14 +14,6 @@ export class GatewayRoutes {
     return this._router;
   }
 
-  private getAllUsers = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    console.log("Gateway - getAllUsers reached");
-    return;
-  }
-
   private registerRoutes = (): void => {
     const usersInternalApiHost: string = process.env.USERS_INTERNAL_API_HOST ?? "";
     const usersInternalApiBasePath: string = process.env.USERS_INTERNAL_API_BASE_PATH ?? "";

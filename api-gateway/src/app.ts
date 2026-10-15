@@ -5,9 +5,8 @@ import cors from 'cors';
 import { errorHandler } from './middlewares/error-handler.middleware.js';
 import { ErrorCodes } from './utils/constants.js';
 import { GatewayRoutes } from './routes/gateway.routes.js';
-import type { ProxyRouteOptions } from './models/index.models.js';
-import proxy, { type ProxyOptions } from 'express-http-proxy';
-import { verifyJwt } from './middlewares/auth.middleware.js';
+import { verifyJwtHandler } from './middlewares/auth.middleware.js';
+import { correlationIdHandler } from './middlewares/correlation-id.middleware.js';
 
 export function createApp() {
   const app = express();
@@ -15,7 +14,7 @@ export function createApp() {
 
   app.use(cors());
   app.use(express.json());
-
+  app.use(correlationIdHandler)
 
   // routes
   app.get('/health', (req: Request, res: Response) => {
@@ -25,7 +24,7 @@ export function createApp() {
   });
 
   // users endpoints
-  app.use("/api/users", verifyJwt, new GatewayRoutes().getApiGatewayRoutes());
+  app.use("/api/users", verifyJwtHandler, new GatewayRoutes().getApiGatewayRoutes());
 
   // unknown routes
   app.use((req, res) => {

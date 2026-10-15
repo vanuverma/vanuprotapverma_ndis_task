@@ -41,6 +41,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: AuthenticatedUser;
+      correlationId: string;
     }
   }
 }
@@ -59,4 +60,13 @@ export interface GatewayRoute {
 export interface JwksKeyInfo {
   key: JwksRsa.SigningKey;
   expiryInMilliSeconds: number;
+}
+
+export interface LoggerObject {
+  timestamp: string;
+  correlationId: string;
+  method: string;
+  path: string;
+  sourceIp: string;
+  userId?: string | undefined;
 }

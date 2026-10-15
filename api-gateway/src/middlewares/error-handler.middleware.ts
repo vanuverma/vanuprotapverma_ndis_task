@@ -2,7 +2,7 @@ import type { ErrorRequestHandler } from "express";
 import { AppError } from "../utils/app-error.util.js";
 import { ErrorCodes } from "../utils/constants.js";
 import type { ApiResponse, ErrorCode } from "../models/index.models.js";
-
+import apiGatewayLogger from "../utils/logger.js";
 
 export const errorHandler: ErrorRequestHandler = (
   err,
@@ -25,7 +25,13 @@ export const errorHandler: ErrorRequestHandler = (
     message = err.message;
     code = err.errorCode;
   } else {
-    console.error(err);
+    apiGatewayLogger.error("Application error.", {
+      method: req.method,
+      correlationId: req.correlationId,
+      path: req.path,
+      sourceIp: req.ip || "not-detectable",
+      timestamp: new Date().toISOString()
+    });
   }
 
   const response: ApiResponse = {

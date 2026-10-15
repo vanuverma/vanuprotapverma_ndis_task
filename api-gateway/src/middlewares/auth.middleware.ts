@@ -6,6 +6,7 @@ import { AppError } from "../utils/app-error.util.js";
 import { ErrorCodes } from "../utils/constants.js";
 import type { JwksKeyInfo } from "../models/index.models.js";
 import { getFutureExpiryTimeInMilliSeconds } from "../utils/utilities.js";
+import apiGatewayLogger from "../utils/logger.js";
 
 // TODO change value type
 const jwksSigningKeys = new Map<string, JwksKeyInfo>();
@@ -13,8 +14,14 @@ const jwksSigningKeys = new Map<string, JwksKeyInfo>();
 function extractToken(req: Request): string {
     try {
         return req.headers["authorization"]?.slice(7) ?? "";
-    } catch (e) {
-        console.log(`Token extract error. ${e}`);
+    } catch {
+        apiGatewayLogger.error("Token extract error.", {
+            method: req.method,
+            correlationId: req.correlationId,
+            path: req.originalUrl,
+            sourceIp: req.ip || "not-detectable",
+            timestamp: new Date().toISOString()
+        });
         return "";
     }
 }
@@ -49,7 +56,7 @@ async function downloadJwksKeysFromRemote(kid: string): Promise<void> {
     return Promise.resolve();
 }
 
-export async function verifyJwt(
+export async function verifyJwtHandler(
     req: Request,
     res: Response,
     next: NextFunction
@@ -60,9 +67,22 @@ export async function verifyJwt(
          */
         const token: string = extractToken(req);
         if (!token) {
+            apiGatewayLogger.error("Token extract error.", {
+                method: req.method,
+                correlationId: req.correlationId,
+                path: req.originalUrl,
+                sourceIp: req.ip || "not-detectable",
+                timestamp: new Date().toISOString()
+            });
             throw new AppError("Token extract error", 401, ErrorCodes.UNAUTHORIZED);
         }
-        console.log("Bearer token extracted");
+        apiGatewayLogger.info("Bearer token extracted.", {
+            method: req.method,
+            correlationId: req.correlationId,
+            path: req.originalUrl,
+            sourceIp: req.ip || "not-detectable",
+            timestamp: new Date().toISOString()
+        });
 
         /**
          * decode token to get the kid from the jwt
@@ -72,16 +92,41 @@ export async function verifyJwt(
         if (!decoded ||
             !decoded?.header
         ) {
+            apiGatewayLogger.error("Token decode error.", {
+                method: req.method,
+                correlationId: req.correlationId,
+                path: req.originalUrl,
+                sourceIp: req.ip || "not-detectable",
+                timestamp: new Date().toISOString()
+            });
             throw new AppError("Token decode error", 401, ErrorCodes.UNAUTHORIZED);
         }
-        console.log("Token decoded");
-
+        apiGatewayLogger.info("Token decoded.", {
+            method: req.method,
+            correlationId: req.correlationId,
+            path: req.originalUrl,
+            sourceIp: req.ip || "not-detectable",
+            timestamp: new Date().toISOString()
+        });
 
         const kid = decoded.header.kid ?? "";
         if (!kid) {
+            apiGatewayLogger.error("Token kid error.", {
+                method: req.method,
+                correlationId: req.correlationId,
+                path: req.originalUrl,
+                sourceIp: req.ip || "not-detectable",
+                timestamp: new Date().toISOString()
+            });
             throw new AppError("Token kid error", 401, ErrorCodes.UNAUTHORIZED);
         }
-        console.log("Token kid extracted");
+        apiGatewayLogger.info("Token kid extracted", {
+            method: req.method,
+            correlationId: req.correlationId,
+            path: req.originalUrl,
+            sourceIp: req.ip || "not-detectable",
+            timestamp: new Date().toISOString()
+        });
 
         /**
          * check if signing keys already available in memory and are valid.
@@ -90,13 +135,17 @@ export async function verifyJwt(
          * obtain again from jwks url
          */
         const existingKey = extractSigningKeyUsingKid(kid);
-        console.log(`existingKey: ${existingKey}`);
-
         let shouldDownloadJwksKey = false;
         if (!existingKey || existingKey.expiryInMilliSeconds <= Date.now()) {
             shouldDownloadJwksKey = true;
         }
-        console.log(`shouldDownloadJwksKey: ${shouldDownloadJwksKey}`);
+        apiGatewayLogger.info(`Download Jwks Key: ${shouldDownloadJwksKey}`, {
+            method: req.method,
+            correlationId: req.correlationId,
+            path: req.originalUrl,
+            sourceIp: req.ip || "not-detectable",
+            timestamp: new Date().toISOString()
+        });
 
         /**
          * call jwks url if needed
@@ -111,16 +160,29 @@ export async function verifyJwt(
          */
         const signingKeyToUse = jwksSigningKeys.get(kid);
         if (!signingKeyToUse) {
+            apiGatewayLogger.error("Signing key error.", {
+                method: req.method,
+                correlationId: req.correlationId,
+                path: req.originalUrl,
+                sourceIp: req.ip || "not-detectable",
+                timestamp: new Date().toISOString()
+            });
             throw new AppError("Signing key error", 401, ErrorCodes.UNAUTHORIZED);
         }
         const publicKey = signingKeyToUse?.key.getPublicKey();
-
         const verified = Jwt.verify(token, publicKey, {
             issuer: process.env.AUTH0_ISSUER,
             audience: process.env.AUTH0_AUDIENCE,
             complete: true
         });
         if (!verified) {
+            apiGatewayLogger.error("Invalid user identity.", {
+                method: req.method,
+                correlationId: req.correlationId,
+                path: req.originalUrl,
+                sourceIp: req.ip || "not-detectable",
+                timestamp: new Date().toISOString()
+            });
             throw new AppError("Invalid user identity", 401, ErrorCodes.UNAUTHORIZED);
         }
 
@@ -129,10 +191,24 @@ export async function verifyJwt(
 
         const userId = verified.payload.sub?.toString();
         req.headers["x-verified-user"] = userId;
+        apiGatewayLogger.info("Token verify successful.", {
+            method: req.method,
+            correlationId: req.correlationId,
+            path: req.originalUrl,
+            sourceIp: req.ip || "not-detectable",
+            timestamp: new Date().toISOString(),
+            userId: userId
+        });
 
         next();
     } catch (error) {
-        console.log(`Auth middleware error ${error}`);
+        apiGatewayLogger.error("Auth middleware error.", {
+            method: req.method,
+            correlationId: req.correlationId,
+            path: req.originalUrl,
+            sourceIp: req.ip || "not-detectable",
+            timestamp: new Date().toISOString()
+        });
         next(error);
     }
 }
