@@ -4,18 +4,20 @@ export function populateApiResponse<T>(
   status: number,
   message: string,
   data: T | null,
-  error: ApiErrorDetails | null
+  error: ApiErrorDetails | null,
 ): ApiResponse<T> {
   const response: ApiResponse<T> = {
     error,
     data,
     status,
-    message
+    message,
   };
   return response;
 }
 
-export function getFutureExpiryTimeInMilliSeconds(minutesFromNow: number = 10): number {
+export function getFutureExpiryTimeInMilliSeconds(
+  minutesFromNow: number = 10,
+): number {
   const now = Date.now();
 
   // limiting the expiry range
@@ -24,6 +26,6 @@ export function getFutureExpiryTimeInMilliSeconds(minutesFromNow: number = 10): 
   } else if (minutesFromNow > 60) {
     return now + 3600000; // 60 minutes
   } else {
-    return now + (minutesFromNow * 1000 * 60);
+    return now + minutesFromNow * 1000 * 60;
   }
 }

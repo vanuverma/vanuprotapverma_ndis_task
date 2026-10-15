@@ -1,9 +1,9 @@
-import 'dotenv/config';
-import { createApp } from './app.js';
-import apiGatewayLogger from './utils/logger.js';
+import "dotenv/config";
+import { createApp } from "./app.js";
+import apiGatewayLogger from "./utils/logger.js";
 
 const app = createApp();
-const PORT: number = parseInt(process.env.PORT ?? '3000', 10);
+const PORT: number = parseInt(process.env.PORT ?? "3000", 10);
 
 // validate env variables
 if (
@@ -17,7 +17,6 @@ if (
 ) {
   apiGatewayLogger.error("Missing one or more environment variable values");
 }
-
 
 app.listen(PORT, () => {
   console.log(`[API Gateway] Running on port: ${PORT}`);

@@ -1,5 +1,5 @@
-import pino from 'pino';
-import type { LoggerObject } from '../models/index.models.js';
+import pino from "pino";
+import type { LoggerObject } from "../models/index.models.js";
 
 export class ApiGatewayLogger {
   private readonly _logger: pino.Logger;
@@ -15,22 +15,22 @@ export class ApiGatewayLogger {
           "refreshToken",
           "authorization",
           "req.headers.authorization",
-          "req.headers.cookie"
+          "req.headers.cookie",
         ],
-        censor: "[REDACTED]"
+        censor: "[REDACTED]",
       },
       formatters: {
         level: (label) => {
           return { level: label };
-        }
+        },
       },
       timestamp: true,
       transport: {
-        target: 'pino-pretty',
+        target: "pino-pretty",
         options: {
-          colorize: true
-        }
-      }
+          colorize: true,
+        },
+      },
     });
   }
 

@@ -19,7 +19,7 @@
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "moduleResolution": "NodeNext",  
+    "moduleResolution": "NodeNext",
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
@@ -40,11 +40,8 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "exclude": ["node_modules", "dist"]
 }

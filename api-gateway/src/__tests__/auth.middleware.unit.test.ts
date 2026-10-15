@@ -1,22 +1,48 @@
-import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterEach,
+  vi,
+} from "vitest";
 import type { Request, Response } from "express";
 
-const { mockDecode, mockVerify, mockGetSigningKey, mockGetFutureExpiry, MockJwksClient } = vi.hoisted(() => ({
+const {
+  mockDecode,
+  mockVerify,
+  mockGetSigningKey,
+  mockGetFutureExpiry,
+  MockJwksClient,
+} = vi.hoisted(() => ({
   mockDecode: vi.fn(),
   mockVerify: vi.fn(),
   mockGetSigningKey: vi.fn(),
   mockGetFutureExpiry: vi.fn(),
-  MockJwksClient: vi.fn(),   // hoisted so it can be passed to vi.mock() factory below
+  MockJwksClient: vi.fn(), // hoisted so it can be passed to vi.mock() factory below
 }));
 
-vi.mock("jsonwebtoken", () => ({ default: { decode: mockDecode, verify: mockVerify } }));
+vi.mock("jsonwebtoken", () => ({
+  default: { decode: mockDecode, verify: mockVerify },
+}));
 vi.mock("jwks-rsa", () => ({ JwksClient: MockJwksClient }));
-vi.mock("../utils/logger.js", () => ({ default: { info: vi.fn(), error: vi.fn() } }));
-vi.mock("../utils/constants.js", () => ({ ErrorCodes: { UNAUTHORIZED: "UNAUTHORIZED" } }));
-vi.mock("../utils/utilities.js", () => ({ getFutureExpiryTimeInMilliSeconds: mockGetFutureExpiry }));
+vi.mock("../utils/logger.js", () => ({
+  default: { info: vi.fn(), error: vi.fn() },
+}));
+vi.mock("../utils/constants.js", () => ({
+  ErrorCodes: { UNAUTHORIZED: "UNAUTHORIZED" },
+}));
+vi.mock("../utils/utilities.js", () => ({
+  getFutureExpiryTimeInMilliSeconds: mockGetFutureExpiry,
+}));
 vi.mock("../utils/app-error.util.js", () => ({
   AppError: class AppError extends Error {
-    constructor(message: string, public statusCode: number, public errorCode: string) {
+    constructor(
+      message: string,
+      public statusCode: number,
+      public errorCode: string,
+    ) {
       super(message);
     }
   },
@@ -28,8 +54,11 @@ import { verifyJwtHandler } from "../middlewares/auth.middleware.js";
 
 function makeReq(headers: Record<string, string> = {}): Partial<Request> {
   return {
-    method: "GET", originalUrl: "/protected", ip: "127.0.0.1",
-    correlationId: "corr-1", headers: { ...headers } as any,
+    method: "GET",
+    originalUrl: "/protected",
+    ip: "127.0.0.1",
+    correlationId: "corr-1",
+    headers: { ...headers } as any,
   };
 }
 
@@ -55,15 +84,25 @@ describe("verifyJwtHandler", () => {
     kid = `kid-${++kidCounter}`;
 
     mockGetFutureExpiry.mockReturnValue(FUTURE);
-    mockDecode.mockReturnValue({ header: { kid }, payload: { sub: "auth0|user-1" }, signature: "" });
-    mockVerify.mockReturnValue({ header: {}, payload: { sub: "auth0|user-1" }, signature: "" });
+    mockDecode.mockReturnValue({
+      header: { kid },
+      payload: { sub: "auth0|user-1" },
+      signature: "",
+    });
+    mockVerify.mockReturnValue({
+      header: {},
+      payload: { sub: "auth0|user-1" },
+      signature: "",
+    });
 
     // Regular function (not arrow) passed to mockImplementation so `new MockJwksClient()`
     // works correctly — arrow functions cannot be used as constructors
     MockJwksClient.mockImplementation(function () {
       return { getSigningKey: mockGetSigningKey };
     });
-    mockGetSigningKey.mockResolvedValue({ getPublicKey: vi.fn().mockReturnValue("mock-public-key") });
+    mockGetSigningKey.mockResolvedValue({
+      getPublicKey: vi.fn().mockReturnValue("mock-public-key"),
+    });
   });
 
   afterEach(() => vi.clearAllMocks());
@@ -85,42 +124,66 @@ describe("verifyJwtHandler", () => {
     await verifyJwtHandler(makeReq(headers) as Request, {} as Response, next);
 
     expect(next).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: 401, message: "Token extract error" })
+      expect.objectContaining({
+        statusCode: 401,
+        message: "Token extract error",
+      }),
     );
   });
 
   it("passes 401 to next() when decode returns null", async () => {
     mockDecode.mockReturnValue(null);
 
-    await verifyJwtHandler(makeReq({ authorization: "Bearer token" }) as Request, {} as Response, next);
+    await verifyJwtHandler(
+      makeReq({ authorization: "Bearer token" }) as Request,
+      {} as Response,
+      next,
+    );
 
     expect(next).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: 401, message: "Token decode error" })
+      expect.objectContaining({
+        statusCode: 401,
+        message: "Token decode error",
+      }),
     );
   });
 
   it("passes 401 to next() when the JWT header has no kid", async () => {
     mockDecode.mockReturnValue({ header: {}, payload: {}, signature: "" });
 
-    await verifyJwtHandler(makeReq({ authorization: "Bearer token" }) as Request, {} as Response, next);
+    await verifyJwtHandler(
+      makeReq({ authorization: "Bearer token" }) as Request,
+      {} as Response,
+      next,
+    );
 
     expect(next).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: 401, message: "Token kid error" })
+      expect.objectContaining({ statusCode: 401, message: "Token kid error" }),
     );
   });
 
   it("passes error to next() when getSigningKey rejects", async () => {
     mockGetSigningKey.mockRejectedValue(new Error("JWKS unreachable"));
 
-    await verifyJwtHandler(makeReq({ authorization: "Bearer token" }) as Request, {} as Response, next);
+    await verifyJwtHandler(
+      makeReq({ authorization: "Bearer token" }) as Request,
+      {} as Response,
+      next,
+    );
 
     expect(next).toHaveBeenCalledWith(expect.any(Error));
   });
 
   it("passes error to next() when verify throws", async () => {
-    mockVerify.mockImplementation(() => { throw new Error("invalid signature"); });
+    mockVerify.mockImplementation(() => {
+      throw new Error("invalid signature");
+    });
 
-    await verifyJwtHandler(makeReq({ authorization: "Bearer token" }) as Request, {} as Response, next);
+    await verifyJwtHandler(
+      makeReq({ authorization: "Bearer token" }) as Request,
+      {} as Response,
+      next,
+    );
 
     expect(next).toHaveBeenCalledWith(expect.any(Error));
   });
@@ -141,7 +204,10 @@ describe("verifyJwtHandler", () => {
   });
 
   it("overwrites a client-supplied x-verified-user with the verified sub", async () => {
-    const req = makeReq({ authorization: "Bearer token", "x-verified-user": "injected" });
+    const req = makeReq({
+      authorization: "Bearer token",
+      "x-verified-user": "injected",
+    });
 
     await verifyJwtHandler(req as Request, {} as Response, next);
 

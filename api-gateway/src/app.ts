@@ -1,30 +1,34 @@
-import 'dotenv/config';
-import express, { type Request, type Response } from 'express';
-import cors from 'cors';
+import "dotenv/config";
+import express, { type Request, type Response } from "express";
+import cors from "cors";
 
-import { errorHandler } from './middlewares/error-handler.middleware.js';
-import { ErrorCodes } from './utils/constants.js';
-import { GatewayRoutes } from './routes/gateway.routes.js';
-import { verifyJwtHandler } from './middlewares/auth.middleware.js';
-import { correlationIdHandler } from './middlewares/correlation-id.middleware.js';
+import { errorHandler } from "./middlewares/error-handler.middleware.js";
+import { ErrorCodes } from "./utils/constants.js";
+import { GatewayRoutes } from "./routes/gateway.routes.js";
+import { verifyJwtHandler } from "./middlewares/auth.middleware.js";
+import { correlationIdHandler } from "./middlewares/correlation-id.middleware.js";
 
 export function createApp() {
   const app = express();
-  app.disable('x-powered-by');
+  app.disable("x-powered-by");
 
   app.use(cors());
   app.use(express.json());
   app.use(correlationIdHandler);
 
   // routes
-  app.get('/health', (req: Request, res: Response) => {
+  app.get("/health", (req: Request, res: Response) => {
     res.json({
-      message: 'API GATEWAY is healthy'
+      message: "API GATEWAY is healthy",
     });
   });
 
   // users endpoints
-  app.use("/api/users", verifyJwtHandler, new GatewayRoutes().getApiGatewayRoutes());
+  app.use(
+    "/api/users",
+    verifyJwtHandler,
+    new GatewayRoutes().getApiGatewayRoutes(),
+  );
 
   // unknown routes
   app.use((req, res) => {

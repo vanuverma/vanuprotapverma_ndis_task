@@ -8,7 +8,7 @@ export const errorHandler: ErrorRequestHandler = (
   err,
   req,
   res,
-  next
+  next,
 ): void => {
   // The response has already started.
   if (res.headersSent) {
@@ -30,7 +30,7 @@ export const errorHandler: ErrorRequestHandler = (
       correlationId: req.correlationId,
       path: req.path,
       sourceIp: req.ip || "not-detectable",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 

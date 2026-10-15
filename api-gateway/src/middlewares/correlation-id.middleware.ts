@@ -4,7 +4,7 @@ import { uuidv7 } from "uuidv7";
 export const correlationIdHandler = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   const correlationId = uuidv7();
   req.correlationId = correlationId;

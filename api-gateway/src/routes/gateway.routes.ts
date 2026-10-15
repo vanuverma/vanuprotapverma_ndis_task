@@ -2,7 +2,6 @@ import { Router, type Request, type Response } from "express";
 import proxy from "express-http-proxy";
 
 export class GatewayRoutes {
-
   private readonly _router: Router;
 
   constructor() {
@@ -12,11 +11,13 @@ export class GatewayRoutes {
 
   getApiGatewayRoutes = (): Router => {
     return this._router;
-  }
+  };
 
   private registerRoutes = (): void => {
-    const usersInternalApiHost: string = process.env.USERS_INTERNAL_API_HOST ?? "";
-    const usersInternalApiBasePath: string = process.env.USERS_INTERNAL_API_BASE_PATH ?? "";
+    const usersInternalApiHost: string =
+      process.env.USERS_INTERNAL_API_HOST ?? "";
+    const usersInternalApiBasePath: string =
+      process.env.USERS_INTERNAL_API_BASE_PATH ?? "";
 
     this._router.use(
       "/",
@@ -25,9 +26,8 @@ export class GatewayRoutes {
           const path = req.url === "/" ? "" : req.url;
           const targetPath = `${usersInternalApiBasePath}${path}`;
           return targetPath;
-        }
-      })
+        },
+      }),
     );
-
-  }
+  };
 }

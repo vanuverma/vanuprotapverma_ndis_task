@@ -19,7 +19,7 @@ function extractToken(req: Request): string {
       correlationId: req.correlationId,
       path: req.originalUrl,
       sourceIp: req.ip || "not-detectable",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
     return "";
   }
@@ -42,14 +42,14 @@ async function downloadJwksKeysFromRemote(kid: string): Promise<void> {
     cache: true,
     cacheMaxAge: expiryInMilliSeconds,
     rateLimit: true,
-    jwksUri: process.env.AUTH0_JWKS_URL ?? ""
-  }
+    jwksUri: process.env.AUTH0_JWKS_URL ?? "",
+  };
 
   const client = new JwksClient(jwksOptions);
   let signingKey = await client.getSigningKey(kid);
   jwksSigningKeys.set(kid, {
     key: signingKey,
-    expiryInMilliSeconds: expiryInMilliSeconds
+    expiryInMilliSeconds: expiryInMilliSeconds,
   });
   return Promise.resolve();
 }
@@ -57,7 +57,7 @@ async function downloadJwksKeysFromRemote(kid: string): Promise<void> {
 export async function verifyJwtHandler(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     /**
@@ -70,7 +70,7 @@ export async function verifyJwtHandler(
         correlationId: req.correlationId,
         path: req.originalUrl,
         sourceIp: req.ip || "not-detectable",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       throw new AppError("Token extract error", 401, ErrorCodes.UNAUTHORIZED);
     }
@@ -79,7 +79,7 @@ export async function verifyJwtHandler(
       correlationId: req.correlationId,
       path: req.originalUrl,
       sourceIp: req.ip || "not-detectable",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     /**
@@ -87,15 +87,13 @@ export async function verifyJwtHandler(
      * kid will be used to determine correct public key from jwks endpoint response
      */
     const decoded = decodeToken(token);
-    if (!decoded ||
-      !decoded?.header
-    ) {
+    if (!decoded || !decoded?.header) {
       apiGatewayLogger.error("Token decode error.", {
         method: req.method,
         correlationId: req.correlationId,
         path: req.originalUrl,
         sourceIp: req.ip || "not-detectable",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       throw new AppError("Token decode error", 401, ErrorCodes.UNAUTHORIZED);
     }
@@ -104,7 +102,7 @@ export async function verifyJwtHandler(
       correlationId: req.correlationId,
       path: req.originalUrl,
       sourceIp: req.ip || "not-detectable",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     const kid = decoded.header.kid ?? "";
@@ -114,7 +112,7 @@ export async function verifyJwtHandler(
         correlationId: req.correlationId,
         path: req.originalUrl,
         sourceIp: req.ip || "not-detectable",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       throw new AppError("Token kid error", 401, ErrorCodes.UNAUTHORIZED);
     }
@@ -123,13 +121,13 @@ export async function verifyJwtHandler(
       correlationId: req.correlationId,
       path: req.originalUrl,
       sourceIp: req.ip || "not-detectable",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     /**
      * check if signing keys already available in memory and are valid.
      * if no existing key, call jwks endpoint to get public keys and save them in memory with an expiry
-     * during jwt verification, first check the in-memory keys, and if expired, then 
+     * during jwt verification, first check the in-memory keys, and if expired, then
      * obtain again from jwks url
      */
     const existingKey = extractSigningKeyUsingKid(kid);
@@ -142,7 +140,7 @@ export async function verifyJwtHandler(
       correlationId: req.correlationId,
       path: req.originalUrl,
       sourceIp: req.ip || "not-detectable",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     /**
@@ -163,7 +161,7 @@ export async function verifyJwtHandler(
         correlationId: req.correlationId,
         path: req.originalUrl,
         sourceIp: req.ip || "not-detectable",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       throw new AppError("Signing key error", 401, ErrorCodes.UNAUTHORIZED);
     }
@@ -171,7 +169,7 @@ export async function verifyJwtHandler(
     const verified = Jwt.verify(token, publicKey, {
       issuer: process.env.AUTH0_ISSUER,
       audience: process.env.AUTH0_AUDIENCE,
-      complete: true
+      complete: true,
     });
     if (!verified) {
       apiGatewayLogger.error("Invalid user identity.", {
@@ -179,11 +177,10 @@ export async function verifyJwtHandler(
         correlationId: req.correlationId,
         path: req.originalUrl,
         sourceIp: req.ip || "not-detectable",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       throw new AppError("Invalid user identity", 401, ErrorCodes.UNAUTHORIZED);
     }
-
 
     delete req.headers["x-verified-user"];
 
@@ -195,7 +192,7 @@ export async function verifyJwtHandler(
       path: req.originalUrl,
       sourceIp: req.ip || "not-detectable",
       timestamp: new Date().toISOString(),
-      userId: userId
+      userId: userId,
     });
 
     next();
@@ -205,7 +202,7 @@ export async function verifyJwtHandler(
       correlationId: req.correlationId,
       path: req.originalUrl,
       sourceIp: req.ip || "not-detectable",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
     next(error);
   }
