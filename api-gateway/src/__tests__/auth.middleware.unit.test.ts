@@ -7,7 +7,7 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 const {
   mockDecode,
@@ -110,7 +110,7 @@ describe("verifyJwtHandler", () => {
   it("calls next() and sets x-verified-user on a valid token", async () => {
     const req = makeReq({ authorization: "Bearer token" });
 
-    await verifyJwtHandler(req as Request, {} as Response, next);
+    await verifyJwtHandler(req as Request, {} as Response, next as NextFunction);
 
     expect(next).toHaveBeenCalledWith();
     expect((req.headers as any)["x-verified-user"]).toBe("auth0|user-1");
@@ -121,7 +121,7 @@ describe("verifyJwtHandler", () => {
     ["empty Authorization value", { authorization: "" }],
     ["Bearer with no token", { authorization: "Bearer " }],
   ])("passes 401 to next() — %s", async (_label, headers) => {
-    await verifyJwtHandler(makeReq(headers) as Request, {} as Response, next);
+    await verifyJwtHandler(makeReq(headers) as Request, {} as Response, next as NextFunction);
 
     expect(next).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -137,7 +137,7 @@ describe("verifyJwtHandler", () => {
     await verifyJwtHandler(
       makeReq({ authorization: "Bearer token" }) as Request,
       {} as Response,
-      next,
+      next as NextFunction,
     );
 
     expect(next).toHaveBeenCalledWith(
@@ -154,7 +154,7 @@ describe("verifyJwtHandler", () => {
     await verifyJwtHandler(
       makeReq({ authorization: "Bearer token" }) as Request,
       {} as Response,
-      next,
+      next as NextFunction,
     );
 
     expect(next).toHaveBeenCalledWith(
@@ -168,7 +168,7 @@ describe("verifyJwtHandler", () => {
     await verifyJwtHandler(
       makeReq({ authorization: "Bearer token" }) as Request,
       {} as Response,
-      next,
+      next as NextFunction,
     );
 
     expect(next).toHaveBeenCalledWith(expect.any(Error));
@@ -182,7 +182,7 @@ describe("verifyJwtHandler", () => {
     await verifyJwtHandler(
       makeReq({ authorization: "Bearer token" }) as Request,
       {} as Response,
-      next,
+      next as NextFunction,
     );
 
     expect(next).toHaveBeenCalledWith(expect.any(Error));
@@ -198,7 +198,7 @@ describe("verifyJwtHandler", () => {
     mockGetSigningKey.mockClear();
 
     // Second request — expired cache entry must trigger a fresh download
-    await verifyJwtHandler(req(), {} as Response, next);
+    await verifyJwtHandler(req(), {} as Response, next as NextFunction);
 
     expect(mockGetSigningKey).toHaveBeenCalledWith(kid);
   });
@@ -209,7 +209,7 @@ describe("verifyJwtHandler", () => {
       "x-verified-user": "injected",
     });
 
-    await verifyJwtHandler(req as Request, {} as Response, next);
+    await verifyJwtHandler(req as Request, {} as Response, next as NextFunction);
 
     expect((req.headers as any)["x-verified-user"]).toBe("auth0|user-1");
   });
