@@ -8,7 +8,6 @@ import type { JwksKeyInfo } from "../models/index.models.js";
 import { getFutureExpiryTimeInMilliSeconds } from "../utils/utilities.js";
 import apiGatewayLogger from "../utils/logger.js";
 
-// TODO change value type
 const jwksSigningKeys = new Map<string, JwksKeyInfo>();
 
 function extractToken(req: Request): string {
@@ -30,7 +29,6 @@ function decodeToken(token: string): Jwt.Jwt | null {
     return Jwt.decode(token, { complete: true });
 }
 
-// TODO change signature
 function extractSigningKeyUsingKid(kid: string): JwksKeyInfo | undefined {
     if (!kid || !jwksSigningKeys.has(kid)) {
         return undefined;

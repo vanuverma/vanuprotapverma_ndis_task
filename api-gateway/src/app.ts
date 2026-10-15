@@ -14,7 +14,7 @@ export function createApp() {
 
   app.use(cors());
   app.use(express.json());
-  app.use(correlationIdHandler)
+  app.use(correlationIdHandler);
 
   // routes
   app.get('/health', (req: Request, res: Response) => {

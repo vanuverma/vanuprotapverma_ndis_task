@@ -4,3 +4,5 @@ dist/
 */dist/
 .env
 curl.txt
+__tests__
+vitest.config.ts
