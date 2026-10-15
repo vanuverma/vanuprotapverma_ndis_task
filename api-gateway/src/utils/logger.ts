@@ -41,10 +41,6 @@ export class ApiGatewayLogger {
     error = (message: string, data?: LoggerObject): void => {
         this._logger.error(data ?? {}, message);
     };
-
-    debug = (message: string, data?: LoggerObject): void => {
-        this._logger.debug(data ?? {}, message);
-    };
 }
 
 const apiGatewayLogger = new ApiGatewayLogger();
