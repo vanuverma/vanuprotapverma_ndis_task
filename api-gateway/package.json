@@ -7,7 +7,9 @@
     "dev": "clear && tsc && tsx watch src/index.ts",
     "build": "tsc",
     "start": "clear && tsc && node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:unit": "vitest run **/*.unit.test.ts",
+    "test:integration": "vitest run **/*.integration.test.ts",
+    "test:all": "vitest run"
   },
   "keywords": [],
   "author": "",
