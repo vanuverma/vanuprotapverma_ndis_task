@@ -3,5 +3,4 @@ node_modules/
 dist/
 */dist/
 .env
-api-gateway.http
-*/**/__tests__/
+curl.txt

@@ -1,39 +1,46 @@
 
 
-GET http://localhost:4000/health
+curl 'http://localhost:4000/health'
 
 
 ### 
 
-GET http://localhost:4000/api/internal/users
+// success scenario sample
+curl -X GET 'http://localhost:4000/api/internal/users' \
+  -H 'X-Verified-User: "a@a.com"'
+
+### 
+// failure scenario sample i.e. no X-Verified-User provided, so backend should block this request
+curl -X GET 'http://localhost:4000/api/internal/users'
 
 ### 
 
-GET http://localhost:4000/api/internal/users/<copy-from-post-response>
+curl -X GET 'http://localhost:4000/api/internal/users/<copy-from-post-response>' \
+  -H 'X-Verified-User: "a@a.com"'
 
 ### 
 
-POST http://localhost:4000/api/internal/users HTTP/1.1
-content-type: application/json
-X-Verified-User: "a@a.com"
-
-{
+curl -X POST 'http://localhost:4000/api/internal/users' \
+  -H 'content-type: application/json' \
+  -H 'X-Verified-User: "a@a.com"' \
+  -d '{
     "name": "John Connor",
     "email": "jc@sample.com"
-}
+}'
 
 
 ### 
 
-PUT http://localhost:4000/api/internal/users/<copy-from-post-response> HTTP/1.1
-content-type: application/json
-
-{
+curl -X PUT 'http://localhost:4000/api/internal/users/<copy-from-post-response>' \
+  -H 'content-type: application/json' \
+  -H 'X-Verified-User: "a@a.com"' \
+  -d '{
     "name": "John Connor",
     "email": "jc1.new@sample.com",
     "id": "<copy-from-post-response>"
-}
+}'
 
 ### 
 
-DELETE http://localhost:4000/api/internal/users/<copy-from-post-response>
+curl -X DELETE 'http://localhost:4000/api/internal/users/<copy-from-post-response>' \
+  -H 'X-Verified-User: "a@a.com"'

@@ -1,0 +1,41 @@
+
+curl -X GET 'http://localhost:3000/health'
+
+### 
+curl -X GET 'http://localhost:3000/api/users' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <REPLACE_FROM_SHARED_SECRET>'
+
+### 
+
+curl -X GET 'http://localhost:3000/api/users/<copy-from-get-response>' \
+  -H 'Authorization: Bearer <REPLACE_FROM_SHARED_SECRET>'
+
+### 
+
+
+curl -X POST 'http://localhost:3000/api/users' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <REPLACE_FROM_SHARED_SECRET>' \
+  -d '{
+    "name": "John Connor",
+    "email": "jc@sample.com"
+}'
+
+
+### 
+
+curl -X PUT 'http://localhost:3000/api/users/<copy-from-get-response>' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <REPLACE_FROM_SHARED_SECRET>' \
+  -d '{
+    "name": "John Connor",
+    "email": "jc1.new@sample.com",
+    "id": "<copy-from-get-response>"
+}'
+
+### 
+
+curl -X DELETE 'http://localhost:3000/api/users/<copy-from-get-response>' \
+  -H 'Authorization: Bearer <REPLACE_FROM_SHARED_SECRET>'
+
