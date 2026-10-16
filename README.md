@@ -52,22 +52,4 @@ curl --request POST \
 
 ## Request flow
 
-User make the api call 
-    -> Request reaches API Gateway (running at http://localhost:3000/) 
-        -> Auth middleware executes -> Auth middleware verifies Jwt Token 
-                                    -> [decision]
-                                        -> Jwt verified successfully
-                                            -> Extracts userId from verified token
-                                            -> Adds new `X-Verified-User` header
-                                        -> Jwt verification failed 
-                                            -> Terminates the flow
-                                            -> Returns response
-        -> Gateway proxy executes
-            -> Proxies allowed requests to internal user-api 
-                -> user-api proceeses request
-                    -> verify-user middleware executes
-                        -> [decision]
-                            -> `X-Verified-User` header found
-                                -> process request
-                            -> `X-Verified-User` header NOT found
-                                -> block request
+![Flow diagram](Flow-diagram.png)
